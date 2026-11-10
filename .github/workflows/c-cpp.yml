@@ -20,10 +20,10 @@ jobs:
         msystem: UCRT64
         update: true
         install: >-
-          mingw-w64-ucrt-x86_64-gcc
+          mingw-w64-i686-gcc
           make
 
-    - name: Make (x64 non-GC64)
+    - name: Make (x86)
       shell: msys2 {0}
       run: |
         make clean
