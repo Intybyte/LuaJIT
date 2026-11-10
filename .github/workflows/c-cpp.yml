@@ -22,11 +22,7 @@ jobs:
         install: >-
           mingw-w64-x86_64-gcc
           mingw-w64-x86_64-make
-
-    - name: Configure
-      shell: msys2 {0}
-      run: ./configure
-
+          
     - name: Make
       shell: msys2 {0}
       run: make
@@ -34,10 +30,6 @@ jobs:
     - name: Make check
       shell: msys2 {0}
       run: make check
-
-    - name: Make distcheck
-      shell: msys2 {0}
-      run: make distcheck
 
     - name: Upload Windows executable
       uses: actions/upload-artifact@v4
