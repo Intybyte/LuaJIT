@@ -23,9 +23,11 @@ jobs:
           mingw-w64-ucrt-x86_64-gcc
           make
 
-    - name: Make
+    - name: Make (x64 non-GC64)
       shell: msys2 {0}
-      run: make
+      run: |
+        make clean
+        make XCFLAGS="-DLUAJIT_DISABLE_GC64"
 
     - name: Upload Windows executable
       uses: actions/upload-artifact@v4
