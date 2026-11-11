@@ -1,5 +1,5 @@
 
-name: C/C++ CI lj_state_newstate
+name: C/C++ CI lua_newstate
 
 on:
   push:
@@ -12,28 +12,51 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-      - uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
+    - name: Set up MSVC x64
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
 
-      - name: Build LuaJIT
-        shell: cmd
-        working-directory: src
-        run: msvcbuild.bat nogc64
+    - name: Add lj_state_newstate to DLL exports
+      shell: pwsh
+      run: |
+        $path = "src/msvcbuild.bat"
+        $content = [System.IO.File]::ReadAllText($path)
+        $old = '%LJLINK% /DLL /OUT:%LJDLLNAME% lj_*.obj lib_*.obj'
+        $new = '%LJLINK% /DLL /OUT:%LJDLLNAME% /EXPORT:lj_state_newstate lj_*.obj lib_*.obj'
 
-      - name: Upload Windows executable
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-build
-          path: |
-            *.exe
-            **/*.exe
-            *.dll
-            **/*.dll
-            *.dll.a
-            **/*.dll.a
-            *.pdb
-            **/*.pdb
-          if-no-files-found: warn
+        if (-not $content.Contains($old)) {
+          throw "Could not find the expected DLL link command in $path"
+        }
+
+        [System.IO.File]::WriteAllText($path, $content.Replace($old, $new))
+
+    - name: Build LuaJIT x64 with GC64 disabled
+      shell: cmd
+      working-directory: src
+      run: msvcbuild.bat nogc64
+
+    - name: Verify lj_state_newstate is exported
+      shell: pwsh
+      run: |
+        $exports = dumpbin /exports src/lua51.dll
+        if ($exports -notmatch 'lj_state_newstate') {
+          throw "lj_state_newstate was not found in lua51.dll exports"
+        }
+
+    - name: Upload Windows executable
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-build
+        path: |
+          *.exe
+          **/*.exe
+          *.dll
+          **/*.dll
+          *.dll.a
+          **/*.dll.a
+          *.pdb
+          **/*.pdb
+        if-no-files-found: warn
