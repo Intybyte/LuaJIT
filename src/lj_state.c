@@ -244,7 +244,7 @@ static void close_state(lua_State *L)
 }
 
 #if LJ_64 && !LJ_GC64 && !(defined(LUAJIT_USE_VALGRIND) && defined(LUAJIT_USE_SYSMALLOC))
-lua_State *lj_state_newstate(lua_Alloc allocf, void *allocd)
+LUA_API lua_State *lj_state_newstate(lua_Alloc allocf, void *allocd)
 #else
 LUA_API lua_State *lua_newstate(lua_Alloc allocf, void *allocd)
 #endif
